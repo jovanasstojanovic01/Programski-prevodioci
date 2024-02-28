@@ -1,0 +1,7 @@
+main()
+{
+ /**ovo je komentar*/
+ int a: b:real;
+ a:=8#35F;
+ b:='c'
+}

@@ -1,0 +1,273 @@
+//import sekcija
+
+import java_cup.runtime.*;
+import java.io.*;
+import java.util.*;
+
+import SymbolTable.*;
+import AST.*;
+
+parser code {:
+ 
+   SymbolTable symbolTable;
+   
+:};
+
+init with {:
+	symbolTable = new SymbolTable();
+:}
+
+//Terminal symbols
+terminal MAIN;
+terminal INTEGER;
+terminal REAL;
+terminal BOOLEAN; 
+terminal LEFTCB;
+terminal RIGHTCB;
+terminal IF;
+terminal ELIF;	
+terminal ELSE;
+terminal NOTEQ;
+terminal LOWOREQ;
+terminal LOW; 	
+terminal EQ;
+terminal GROREQ;
+terminal GR;
+terminal LEFTPAR;
+terminal RIGHTPAR;
+terminal ASSIGN;
+terminal SEMICOLON;
+terminal COLON;
+terminal String ID;
+terminal Boolean BOOLEANCONST;
+terminal Integer INTEGERCONST;
+terminal Float REALCONST;
+
+//Nonterminal symbols
+non terminal Block Program, Block, Statements;
+non terminal Variables;
+non terminal Variable;
+non terminal Statement Statement;
+non terminal IfStatement IfStatement, Elif, ElseStatement;
+non terminal ArrayList ElsePart, ElifList;
+non terminal String RelOp;
+non terminal Assignment Assignment;
+non terminal Term Term;
+non terminal RelExpression RelExpression;
+non terminal Type Type;
+non terminal Constant Konstanta;
+
+//Grammar
+Program ::= MAIN LEFTPAR RIGHTPAR Block:b 
+	{: 
+		System.out.println("1. smena"); 
+		RESULT = b;
+	:}
+	;
+ 	
+Block ::= LEFTCB Variables Statements:s RIGHTCB 
+	{: 
+		System.out.println("2. smena"); 
+		RESULT = s;
+	:}
+	;
+	
+Variables ::= Variables Variable 
+	{: 
+		System.out.println("3A. smena");
+	:}
+	| Variable 
+	{: 
+		System.out.println("3B. smena");
+	:}
+	;
+	
+Variable ::= Type:t ID:ime SEMICOLON 
+	{: 
+		System.out.println("4. smena");
+		parser.symbolTable.addVar( ime, t );
+	:}
+	;
+	
+Type ::= INTEGER 
+	{: 
+		System.out.println("5A. smena");
+		RESULT = parser.symbolTable.getType( "integer" );
+	:}
+	| REAL 
+	{: 
+		System.out.println("5B. smena"); 
+		RESULT = parser.symbolTable.getType( "real" );
+	:}
+	| BOOLEAN 
+	{: 
+		System.out.println("5C. smena");
+		RESULT = parser.symbolTable.getType( "boolean" ); 
+	:}
+	;
+	
+Statements ::= Statements:ss SEMICOLON Statement:s 
+	{: 
+		System.out.println("6A. smena"); 
+		RESULT = ss;
+		RESULT.addStatement( s );
+	:}
+	| Statement:s 
+	{: 
+		System.out.println("6B. smena");
+		RESULT = new Block();
+        RESULT.addStatement( s ); 
+	:}
+	;
+	
+Statement ::= Assignment:a 
+	{: 
+		System.out.println("7A. smena");
+		RESULT = a; 
+	:}
+	| IfStatement:i
+	{: 
+		System.out.println("7B. smena");
+		RESULT = i; 
+	:}
+	;
+	
+IfStatement ::= IF LEFTPAR RelExpression:re RIGHTPAR COLON Block:b ElsePart:ep 
+	{: 
+		System.out.println("8. smena");
+		RESULT = new IfStatement( re, b, ep ); 
+	:};
+	
+ElsePart ::= ElifList:el ElseStatement:es 
+	{: 
+		System.out.println("9A. smena"); 
+		RESULT = el;
+		RESULT.add( es );
+	:}
+	| ElifList:el 
+	{: 
+		System.out.println("9B. smena");
+		RESULT = el;
+	:}
+	| ElseStatement:es
+	{: 
+		System.out.println("9C. smena");
+		RESULT = new ArrayList<IfStatement>();
+		RESULT.add( es ); 
+	:}
+	| 
+	{: 
+		System.out.println("9D. smena");
+		RESULT = new ArrayList<IfStatement>();
+	:}
+	;
+	
+ElifList ::= ElifList:el Elif:e 
+	{: 
+		System.out.println("10A. smena");
+		RESULT = el;
+		RESULT.add( e ); 
+	:}
+	| Elif:e 
+	{: 
+		System.out.println("10B. smena");
+		RESULT = new ArrayList<IfStatement>();
+		RESULT.add( e ); 
+	:}
+	;
+	
+Elif ::= ELIF LEFTPAR RelExpression:re RIGHTPAR COLON Block:b 
+	{: 
+		System.out.println("11. smena");
+		RESULT = new IfStatement( re, b, new ArrayList<IfStatement>() );
+	:}
+	;
+	
+ElseStatement ::= ELSE COLON Block:b 
+	{: 
+		System.out.println("12. smena");
+		RESULT = new IfStatement( b );
+	:}
+	;
+	
+RelExpression ::= Term:op1 RelOp:relOp Term:op2 
+	{: 
+		System.out.println("13A. smena");
+		RESULT = new RelExpression( op1, relOp, op2);
+	:}
+	| Term:t 
+	{: 
+		System.out.println("13B. smena");
+		RESULT = new RelExpression( t );
+	:}
+	;
+	
+Term ::= ID:ime
+	{: 
+		System.out.println("14A. smena"); 
+		Variable var = parser.symbolTable.getVar( ime );
+		RESULT = new VariableExpression( var );
+	:}
+	| Konstanta:k 
+	{: 
+		System.out.println("14B. smena");
+		RESULT = new ConstantExpression( k );
+	:}
+	;
+	
+RelOp ::= LOW 
+	{: 
+		System.out.println("15A. smena"); 
+		RESULT = "<";
+	:}
+	| LOWOREQ 
+	{: 
+		System.out.println("15B. smena");
+		RESULT = "<="; 
+	:}
+	| EQ 
+	{: 
+		System.out.println("15C. smena");
+		RESULT = "=="; 
+	:}
+	| NOTEQ 
+	{: 
+		System.out.println("15D. smena");
+		RESULT = "<>"; 
+	:}
+	| GR 
+	{: 
+		System.out.println("15E. smena"); 
+		RESULT = ">";
+	:}
+	| GROREQ 
+	{: 
+		System.out.println("15F");
+		RESULT = ">="; 
+	:}
+	;
+	
+Assignment ::= ID:ime ASSIGN Term:t
+	{: 
+		System.out.println("16. smena");
+        Variable var = parser.symbolTable.getVar( ime );
+		RESULT = new Assignment( var, t);
+	:}
+	;
+	
+Konstanta ::= BOOLEANCONST:c
+	{:
+		System.out.println("17A. smena");
+		RESULT = new Constant( parser.symbolTable.getType( "boolean" ), c ); 
+	:}
+	| INTEGERCONST:c
+	{:
+		System.out.println("17B. smena");
+		RESULT = new Constant( parser.symbolTable.getType( "integer" ), c );
+	:}
+	| REALCONST:c
+	{:
+		System.out.println("17C. smena");
+		RESULT = new Constant( parser.symbolTable.getType( "real" ), c );
+	:}
+	;

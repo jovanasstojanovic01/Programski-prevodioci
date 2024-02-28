@@ -1,0 +1,12 @@
+main ( )
+{
+	int a ;
+	int b ;
+	a := 5 ;
+	b := 222 ;
+	if ( a > b ) : {
+		int c ;
+		boolean a ;
+		a := true
+	} 
+}

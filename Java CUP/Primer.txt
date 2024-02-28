@@ -1,0 +1,10 @@
+main ( ) 
+{ 
+	int x ;
+	if ( 5 == 5 ) :
+	{
+		int x ;
+		abc := bca
+	} ;
+	bca := abc
+}			

@@ -1,0 +1,225 @@
+//import section
+
+import java_cup.runtime.*;
+import java.io.*;
+
+parser code {:
+   public static void main( String[] args )
+   {
+      try
+	  {
+		   FileReader file = new FileReader( args[0] );
+		   Scanner scanner = new MPLexer( file );
+		   MPParser parser = new MPParser( scanner );
+		   Symbol syntax_tree = parser.parse();
+	  }
+	  catch( Exception e )
+	  {
+		   e.printStackTrace();
+	  }
+   }
+:};
+
+
+//Terminal symbols
+// terminal EOF;	
+terminal MAIN;
+terminal ID;
+terminal INTEGER;
+terminal REAL;
+terminal BOOLEAN; 
+terminal LEFTCB;
+terminal RIGHTCB;
+terminal IF;
+terminal ELIF;	
+terminal ELSE;
+terminal NOTEQ;
+terminal LOWOREQ;
+terminal LOW; 	
+terminal EQ;
+terminal GROREQ;
+terminal GR;
+terminal CONST;
+terminal LEFTPAR;
+terminal RIGHTPAR;
+terminal ASSIGN;
+terminal SEMICOLON;
+terminal COLON;
+
+//Nonterminal symbols
+non terminal Program;
+non terminal Block;
+non terminal Variables;
+non terminal Variable;
+non terminal Type;
+non terminal Statements;
+non terminal Statement;
+non terminal IfStatement;
+non terminal ElsePart;
+non terminal ElifList;
+non terminal Elif;
+non terminal ElseStatement;
+non terminal RelExpression;
+non terminal Term;
+non terminal RelOp;
+non terminal Assignment;
+
+//Grammar
+Program ::= MAIN LEFTPAR RIGHTPAR Block 
+	{: 
+		System.out.println("1. smena"); 
+	:}
+	;
+	
+Block ::= LEFTCB Variables Statements RIGHTCB 
+	{: 
+		System.out.println("2. smena"); 
+	:}
+	;
+	
+Variables ::= Variables Variable 
+	{: 
+		System.out.println("3A. smena"); 
+	:}
+	| Variable 
+	{: 
+		System.out.println("3B. smena"); 
+	:}
+	;
+	
+Variable ::= Type ID SEMICOLON 
+	{: 
+		System.out.println("4. smena"); 
+	:}
+	;
+	
+Type ::= INTEGER 
+	{: 
+		System.out.println("5A. smena"); 
+	:}
+	| REAL 
+	{: 
+		System.out.println("5B. smena"); 
+	:}
+	| BOOLEAN 
+	{: 
+		System.out.println("5C. smena"); 
+	:}
+	;
+	
+Statements ::= Statements SEMICOLON Statement 
+	{: 
+		System.out.println("6A. smena"); 
+	:}
+	| Statement 
+	{: 
+		System.out.println("6B. smena"); 
+	:}
+	;
+	
+Statement ::= Assignment 
+	{: 
+		System.out.println("7A. smena"); 
+	:}
+	| IfStatement 
+	{: 
+		System.out.println("7B. smena"); 
+	:}
+	;
+	
+IfStatement ::= IF LEFTPAR RelExpression RIGHTPAR COLON Block ElsePart 
+	{: 
+		System.out.println("8. smena"); 
+	:};
+	
+ElsePart ::= ElifList ElseStatement 
+	{: 
+		System.out.println("9A. smena"); 
+	:}
+	| ElifList 
+	{: 
+		System.out.println("9B. smena"); 
+	:}
+	| ElseStatement 
+	{: 
+		System.out.println("9C. smena"); 
+	:}
+	| //TO DO Videti za ovo | ε
+	{: 
+		System.out.println("9D. smena"); 
+	:}
+	;
+	
+ElifList ::= ElifList Elif 
+	{: 
+		System.out.println("10A. smena"); 
+	:}
+	| Elif 
+	{: 
+		System.out.println("10B. smena"); 
+	:}
+	;
+	
+Elif ::= ELIF LEFTPAR RelExpression RIGHTPAR COLON Block 
+	{: 
+		System.out.println("11. smena"); 
+	:}
+	;
+	
+ElseStatement ::= ELSE COLON Block 
+	{: 
+		System.out.println("12. smena"); 
+	:}
+	;
+	
+RelExpression ::= Term RelOp Term 
+	{: 
+		System.out.println("13A. smena"); 
+	:}
+	| Term 
+	{: 
+		System.out.println("13B. smena"); 
+	:}
+	;
+	
+Term ::= ID 
+	{: 
+		System.out.println("14A. smena"); 
+	:}
+	| CONST 
+	{: 
+		System.out.println("14B. smena"); 
+	:}
+	;
+	
+RelOp ::= LOW 
+	{: 
+		System.out.println("15A. smena"); 
+	:}
+	| LOWOREQ 
+	{: 
+		System.out.println("15B. smena"); 
+	:}
+	| EQ 
+	{: 
+		System.out.println("15C. smena"); 
+	:}
+	| NOTEQ 
+	{: 
+		System.out.println("15D. smena"); 
+	:}
+	| GR 
+	{: 
+		System.out.println("15E. smena"); 
+	:}
+	| GROREQ 
+	{: 
+		System.out.println("15F"); 
+	:}
+	;
+	
+Assignment ::= ID ASSIGN Term 
+	{: 
+		System.out.println("16. smena"); 
+	:}
+	;

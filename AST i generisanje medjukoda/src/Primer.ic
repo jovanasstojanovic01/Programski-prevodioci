@@ -1,0 +1,33 @@
+	Load_Const	R1, 5
+	Store		R1, a
+	Load_Const	R1, 222
+	Store		R1, b
+	Load_Mem	R1, a
+	Load_Mem	R2, b
+	Compare_Equal	R1, R2		
+	JumpIfZero	R1, lab1
+	Load_Const	R1, 1
+	Store		R1, a
+	Jump		lab0
+lab1:
+	Load_Mem	R1, a
+	Load_Mem	R2, b
+	Compare_Less	R1, R2		
+	JumpIfZero	R1, lab2
+	Load_Const	R1, 2
+	Store		R1, a
+	Jump		lab0
+lab2:
+	Load_Mem	R1, a
+	Load_Mem	R2, b
+	Compare_Greater	R1, R2		
+	JumpIfZero	R1, lab3
+	Load_Const	R1, 3
+	Store		R1, a
+	Jump		lab0
+lab3:
+	Load_Const	R1, 4
+	Store		R1, a
+lab0:
+	Load_Const	R1, 5
+	Store		R1, a

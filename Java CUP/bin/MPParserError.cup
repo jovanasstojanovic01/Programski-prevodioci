@@ -1,0 +1,282 @@
+//import section
+
+import java_cup.runtime.*;
+import java.io.*;
+
+parser code {:
+
+   public int errNo = 0;
+   
+   public static void main( String[] args )
+   {
+      try
+	  {
+		   FileReader file = new FileReader( args[0] );
+		   Scanner scanner = new MPLexer( file );
+		   MPParser parser = new MPParser( scanner );
+		   parser.parse();
+		   if ( parser.errNo == 0 )
+		      System.out.println( "Analiza zavrsena. U kodu nema gresaka." );
+		   else
+		      System.out.println( "Analiza zavrsena. Broj gresaka: " + parser.errNo );
+	  }
+	  catch( Exception e )
+	  {
+		   e.printStackTrace();
+	  }
+   }
+   
+   public void syntax_error(Symbol cur_token)
+   {
+   	  
+   }
+   
+   public void report_error(String message, Object info)
+   {
+   	   System.out.print( message );
+   }
+   
+   public int getLine()
+   {
+   	  return (( MPLexer) getScanner()).getLine();
+   }
+:};
+
+
+//Terminal symbols
+// terminal EOF;	
+terminal MAIN;
+terminal ID;
+terminal INTEGER;
+terminal REAL;
+terminal BOOLEAN; 
+terminal LEFTCB;
+terminal RIGHTCB;
+terminal IF;
+terminal ELIF;	
+terminal ELSE;
+terminal NOTEQ;
+terminal LOWOREQ;
+terminal LOW; 	
+terminal EQ;
+terminal GROREQ;
+terminal GR;
+terminal CONST;
+terminal LEFTPAR;
+terminal RIGHTPAR;
+terminal ASSIGN;
+terminal SEMICOLON;
+terminal COLON;
+
+//Nonterminal symbols
+non terminal Program;
+non terminal Block;
+non terminal Variables;
+non terminal Variable;
+non terminal Type;
+non terminal Statements;
+non terminal Statement;
+non terminal IfStatement;
+non terminal ElsePart;
+non terminal ElifList;
+non terminal Elif;
+non terminal ElseStatement;
+non terminal RelExpression;
+non terminal Term;
+non terminal RelOp;
+non terminal Assignment;
+
+//Grammar
+Program ::= MAIN LEFTPAR RIGHTPAR Block 
+	| MAIN LEFTPAR RIGHTPAR error:e 
+	{:
+	   System.out.println( "Nedostaje blok naredbi." );
+	   parser.errNo++;
+	:} 
+	| MAIN LEFTPAR error
+	{:
+	   System.out.println( "Nedostaje )" );
+	   parser.errNo++;
+	:} 
+	| MAIN error
+	{:
+	   System.out.println( "Nedostaje (" );
+	   parser.errNo++;
+	:} 
+	| error
+	{:
+	   System.out.println( "Nedostaje kljucna rec main na pocetku" );
+	   parser.errNo++;
+	:} 
+	;
+	
+Block ::= LEFTCB Variables Statements RIGHTCB 
+	| LEFTCB Variables Statements error
+	{:
+		System.out.println( "Nedostaje }" );
+		parser.errNo++;
+	:} 
+	| LEFTCB Variables error
+	{:
+		System.out.println( "Nedostaje lista naredbi" );
+		parser.errNo++;
+	:} 
+	| LEFTCB error
+	{:
+		System.out.println( "Nedostaju deklaracije" );
+		parser.errNo++;
+	:} 
+	;
+	
+Variables ::= Variables Variable 
+	| Variable 
+	;
+	
+Variable ::= Type ID SEMICOLON 
+	| Type ID error
+	{:
+		System.out.println( "Nedostaje ;" );
+		parser.errNo++;
+	:} 
+	| Type error
+	{:
+		System.out.println( "Nedostaje identifikator" );
+		parser.errNo++;
+	:} 
+	;
+	
+Type ::= INTEGER 
+	| REAL 
+	| BOOLEAN 
+	;
+	
+Statements ::= Statements SEMICOLON Statement 
+	| Statements error Statement
+	{:
+		System.out.println( "Nedostaje ;" );
+		parser.errNo++;
+	:} 
+	| Statement 
+	;
+	
+Statement ::= Assignment 
+	| IfStatement 
+	;
+	
+IfStatement ::= IF LEFTPAR RelExpression RIGHTPAR COLON Block ElsePart 
+	| IF LEFTPAR RelExpression RIGHTPAR COLON error
+	{:
+		System.out.println( "Nedostaje blok naredbi" );
+		parser.errNo++;
+	:} 
+	| IF LEFTPAR RelExpression RIGHTPAR error
+	{:
+		System.out.println( "Nedostaje :" );
+		parser.errNo++;
+	:} 
+	| IF LEFTPAR RelExpression error
+	{:
+		System.out.println( "Nedostaje )" );
+		parser.errNo++;
+	:} 
+	| IF LEFTPAR error
+	{:
+		System.out.println( "Nedostaje RelExpression" );
+		parser.errNo++;
+	:} 
+	| IF error
+	{:
+		System.out.println( "Nedostaje (" );
+		parser.errNo++;
+	:} 
+	;
+	
+ElsePart ::= ElifList ElseStatement 
+	| ElifList 
+	| ElseStatement 
+	| 
+	;
+	
+ElifList ::= ElifList Elif 
+	| Elif 
+	;
+	
+Elif ::= ELIF LEFTPAR RelExpression RIGHTPAR COLON Block
+	| ELIF LEFTPAR RelExpression RIGHTPAR COLON error
+	{:
+		System.out.println( "Nedostaje blok naredbi" );
+		parser.errNo++;
+	:} 
+	| ELIF LEFTPAR RelExpression RIGHTPAR error
+	{:
+		System.out.println( "Nedostaje :" );
+		parser.errNo++;
+	:} 
+	| ELIF LEFTPAR RelExpression error
+	{:
+		System.out.println( "Nedostaje )" );
+		parser.errNo++;
+	:} 
+	| ELIF LEFTPAR error
+	{:
+		System.out.println( "Nedostaje RelExpression" );
+		parser.errNo++;
+	:} 
+	| ELIF error
+	{:
+		System.out.println( "Nedostaje (" );
+		parser.errNo++;
+	:} 
+	;
+	
+ElseStatement ::= ELSE COLON Block 
+	| ELSE COLON error
+	{:
+		System.out.println( "Nedostaje blok naredbi" );
+		parser.errNo++;
+	:} 
+	| ELSE error
+	{:
+		System.out.println( "Nedostaje :" );
+		parser.errNo++;
+	:} 
+	;
+	
+RelExpression ::= Term RelOp Term 
+	| Term RelOp error
+	{:
+		System.out.println( "Nedostaje 2. operand" );
+		parser.errNo++;
+	:} 
+	| Term error
+	{:
+		System.out.println( "Nedostaje operator poredjenja" );
+		parser.errNo++;
+	:} 
+	| Term 
+	;
+	
+Term ::= ID 
+	| CONST 
+	;
+	
+RelOp ::= LOW 
+	| LOWOREQ 
+	| EQ 
+	| NOTEQ 
+	| GR 
+	| GROREQ 
+	;
+	
+Assignment ::= ID ASSIGN Term
+	| ID ASSIGN error
+	{:
+		System.out.println( "Nedostaje sta treba dodeliti" );
+		parser.errNo++;
+	:} 
+	| ID error
+	{:
+		System.out.println( "Nedostaje operator dodele" );
+		parser.errNo++;
+	:} 
+	;

@@ -1,0 +1,7 @@
+main()
+{
+ /**ovo je komentar*/
+ int a:=#356
+ c:=true
+ b:=1.5E10
+}
